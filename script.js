@@ -12,7 +12,7 @@ const navLinks = document.querySelector(".nav-links");
 
 
 // Open / close mobile menu
-if (menuBtn) {
+if (menuBtn && navLinks) {
 
     menuBtn.addEventListener("click", () => {
 
@@ -21,15 +21,19 @@ if (menuBtn) {
         // Change hamburger icon to X
         const icon = menuBtn.querySelector("i");
 
-        if (navLinks.classList.contains("active")) {
+        if (icon) {
 
-            icon.classList.remove("fa-bars");
-            icon.classList.add("fa-xmark");
+            if (navLinks.classList.contains("active")) {
 
-        } else {
+                icon.classList.remove("fa-bars");
+                icon.classList.add("fa-xmark");
 
-            icon.classList.remove("fa-xmark");
-            icon.classList.add("fa-bars");
+            } else {
+
+                icon.classList.remove("fa-xmark");
+                icon.classList.add("fa-bars");
+
+            }
 
         }
 
@@ -38,21 +42,29 @@ if (menuBtn) {
 }
 
 
-// Close mobile menu after clicking a navigation link
-document.querySelectorAll(".nav-links a").forEach(link => {
+// Close mobile menu after clicking navigation link
+if (navLinks && menuBtn) {
 
-    link.addEventListener("click", () => {
+    document.querySelectorAll(".nav-links a").forEach(link => {
 
-        navLinks.classList.remove("active");
+        link.addEventListener("click", () => {
 
-        const icon = menuBtn.querySelector("i");
+            navLinks.classList.remove("active");
 
-        icon.classList.remove("fa-xmark");
-        icon.classList.add("fa-bars");
+            const icon = menuBtn.querySelector("i");
+
+            if (icon) {
+
+                icon.classList.remove("fa-xmark");
+                icon.classList.add("fa-bars");
+
+            }
+
+        });
 
     });
 
-});
+}
 
 
 
@@ -64,19 +76,12 @@ document.querySelectorAll(".nav-links a").forEach(link => {
 const projectImages = [
 
     "assets/images/Coligify1.jpeg",
-
     "assets/images/Coligify2.jpeg",
-
     "assets/images/Coligify3.jpeg",
-
     "assets/images/Coligify4.jpeg",
-
     "assets/images/Coligify5.jpeg",
-
     "assets/images/Coligify6.jpeg",
-
     "assets/images/Coligify7.jpeg",
-
     "assets/images/Coligify8.jpeg"
 
 ];
@@ -126,13 +131,20 @@ function displayProjectImage() {
 
 function nextImage() {
 
+    if (projectImages.length === 0) {
+        return;
+    }
+
+
     currentImageIndex++;
+
 
     if (currentImageIndex >= projectImages.length) {
 
         currentImageIndex = 0;
 
     }
+
 
     displayProjectImage();
 
@@ -146,7 +158,13 @@ function nextImage() {
 
 function previousImage() {
 
+    if (projectImages.length === 0) {
+        return;
+    }
+
+
     currentImageIndex--;
+
 
     if (currentImageIndex < 0) {
 
@@ -154,6 +172,7 @@ function previousImage() {
             projectImages.length - 1;
 
     }
+
 
     displayProjectImage();
 
@@ -170,12 +189,16 @@ document.addEventListener("keydown", (event) => {
     // Don't change project image while typing
     if (
         event.target.tagName === "INPUT" ||
-        event.target.tagName === "TEXTAREA"
+        event.target.tagName === "TEXTAREA" ||
+        event.target.tagName === "SELECT"
     ) {
+
         return;
+
     }
 
 
+    // Right arrow
     if (event.key === "ArrowRight") {
 
         nextImage();
@@ -183,6 +206,7 @@ document.addEventListener("keydown", (event) => {
     }
 
 
+    // Left arrow
     if (event.key === "ArrowLeft") {
 
         previousImage();
@@ -214,7 +238,9 @@ const certificatePreview =
 function openCertificate(imagePath) {
 
     if (!certificateModal || !certificatePreview) {
+
         return;
+
     }
 
 
@@ -238,14 +264,20 @@ function openCertificate(imagePath) {
 function closeCertificate() {
 
     if (!certificateModal) {
+
         return;
+
     }
 
 
     certificateModal.classList.remove("active");
 
 
-    certificatePreview.src = "";
+    if (certificatePreview) {
+
+        certificatePreview.src = "";
+
+    }
 
 
     // Enable background scrolling
@@ -360,49 +392,84 @@ window.addEventListener("scroll", () => {
 
 const animatedElements =
     document.querySelectorAll(
-        ".skill-card, .about-card, .certificate-card, .project-card-large, .education-item, .experience-card"
+        ".skill-card, " +
+        ".about-card, " +
+        ".certificate-card, " +
+        ".project-card-large, " +
+        ".education-item, " +
+        ".experience-card"
     );
-
-
-
-const observer =
-    new IntersectionObserver(
-        (entries) => {
-
-            entries.forEach(entry => {
-
-                if (entry.isIntersecting) {
-
-                    entry.target.classList.add("show");
-
-                }
-
-            });
-
-        },
-
-        {
-            threshold: 0.15
-        }
-
-    );
-
-
-
-animatedElements.forEach(element => {
-
-    observer.observe(element);
-
-});
 
 
 
 /* =====================================================
-                6. IMAGE LOADING
+                INTERSECTION OBSERVER
+===================================================== */
+
+if ("IntersectionObserver" in window) {
+
+    const observer =
+        new IntersectionObserver(
+            (entries, observer) => {
+
+                entries.forEach(entry => {
+
+                    if (entry.isIntersecting) {
+
+                        entry.target.classList.add("show");
+
+                        // Stop observing after animation
+                        observer.unobserve(entry.target);
+
+                    }
+
+                });
+
+            },
+            {
+                threshold: 0.15
+            }
+        );
+
+
+    animatedElements.forEach(element => {
+
+        observer.observe(element);
+
+    });
+
+} else {
+
+    // Fallback for older browsers
+    animatedElements.forEach(element => {
+
+        element.classList.add("show");
+
+    });
+
+}
+
+
+
+/* =====================================================
+                6. PROJECT IMAGE LOADING
 ===================================================== */
 
 
 if (mainProjectImage) {
+
+    mainProjectImage.addEventListener(
+        "load",
+        () => {
+
+            console.log(
+                "Project image loaded successfully:",
+                mainProjectImage.src
+            );
+
+        }
+    );
+
 
     mainProjectImage.addEventListener(
         "error",
@@ -421,7 +488,98 @@ if (mainProjectImage) {
 
 
 /* =====================================================
-                7. PAGE LOADED
+                7. SMOOTH SCROLL
+===================================================== */
+
+
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+
+    anchor.addEventListener("click", function (event) {
+
+        const targetId =
+            this.getAttribute("href");
+
+
+        // Ignore empty "#"
+        if (!targetId || targetId === "#") {
+
+            return;
+
+        }
+
+
+        const target =
+            document.querySelector(targetId);
+
+
+        if (target) {
+
+            event.preventDefault();
+
+
+            target.scrollIntoView({
+
+                behavior: "smooth",
+                block: "start"
+
+            });
+
+        }
+
+    });
+
+});
+
+
+
+/* =====================================================
+                8. RESUME LINK
+===================================================== */
+
+
+const resumeLinks =
+    document.querySelectorAll(
+        'a[href*="Sahil_Sayankar_Resume.pdf"]'
+    );
+
+
+resumeLinks.forEach(link => {
+
+    link.addEventListener("click", () => {
+
+        console.log("Resume opened.");
+
+    });
+
+});
+
+
+
+/* =====================================================
+                9. GITHUB LINK
+===================================================== */
+
+
+const githubLinks =
+    document.querySelectorAll(
+        'a[href*="github.com"]'
+    );
+
+
+githubLinks.forEach(link => {
+
+    link.addEventListener("click", () => {
+
+        console.log("GitHub profile/project opened.");
+
+    });
+
+});
+
+
+
+/* =====================================================
+                10. PAGE LOADED
 ===================================================== */
 
 
@@ -429,6 +587,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Show first project image
     displayProjectImage();
+
 
     console.log(
         "Sahil Sayankar Portfolio loaded successfully."
